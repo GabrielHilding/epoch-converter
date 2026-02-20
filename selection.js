@@ -9,12 +9,22 @@ $(document).ready(function () {
     event.stopPropagation();
   });
 
+  $('#ec-bubble').on('mouseover', function (event) {
+    event.stopPropagation();
+  });
+
   $(document).dblclick(function (e) {
     processSelection(e);
   });
 
   $(document).bind('mouseup', function (e) {
     processSelection(e);
+  });
+
+  let hoverTimer = null;
+  $(document).on('mouseover', function (e) {
+    clearTimeout(hoverTimer);
+    hoverTimer = setTimeout(function () { processHover(e); }, 100);
   });
 
 });
@@ -31,6 +41,32 @@ function processSelection(e) {
     }
     var date = timestampToDate(text);
     showBubble(e, getLocalString(date), getUTCString(date));
+  }
+}
+
+function processHover(e) {
+  let target = e.target;
+  if ($(target).closest('#ec-bubble').length > 0) return;
+
+  let text = '';
+  for (let node of target.childNodes) {
+    if (node.nodeType === Node.TEXT_NODE) {
+      text += node.textContent;
+    }
+  }
+  text = text.trim();
+
+  if ($.isNumeric(text) && [10, 13, 16].includes(text.length)) {
+    let ts = text;
+    if (text.length === 13) {
+      ts = text / 1000;
+    } else if (text.length === 16) {
+      ts = text / 1000000;
+    }
+    var date = timestampToDate(ts);
+    showBubble(e, getLocalString(date), getUTCString(date));
+  } else {
+    hideBubble();
   }
 }
 
